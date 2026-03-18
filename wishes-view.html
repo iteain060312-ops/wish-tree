@@ -15,6 +15,18 @@ canvas { position:fixed; inset:0; width:100%; height:100%; cursor:pointer; }
 .hcount { font-size:10px; letter-spacing:.14em; color:rgba(255,255,255,.2); margin-top:5px; }
 .hint { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); font-size:10px; letter-spacing:.18em; color:rgba(255,255,255,.14); pointer-events:none; z-index:10; white-space:nowrap; }
 
+/* 하단 타이포 */
+.typo-bottom {
+  position:fixed; bottom:20px; left:50%;
+  transform:translateX(-50%);
+  z-index:10; pointer-events:none;
+  opacity:0.45;
+}
+.typo-bottom img {
+  height:clamp(28px, 4vw, 48px);
+  width:auto; display:block;
+}
+
 /* 팝업 */
 .overlay { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0); display:flex; align-items:center; justify-content:center; pointer-events:none; transition:background .4s; }
 .overlay.on { background:rgba(0,0,0,.82); pointer-events:auto; }
@@ -45,7 +57,41 @@ canvas { position:fixed; inset:0; width:100%; height:100%; cursor:pointer; }
 .card-wish { font-family:'Noto Serif KR',serif; font-size:clamp(17px,4vw,22px); font-weight:400; letter-spacing:.1em; color:rgba(38,22,5,.9); text-align:center; line-height:1.8; margin-bottom:18px; position:relative; }
 .card-enc  { font-family:'Noto Serif KR',serif; font-size:12px; font-style:italic; letter-spacing:.12em; color:rgba(55,35,8,.42); text-align:center; line-height:1.7; position:relative; }
 
-/* 로딩 */
+/* 튜토리얼 */
+.tutorial {
+  position:fixed; inset:0; z-index:150;
+  background:rgba(0,0,0,.75);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:28px; padding:40px 32px;
+  opacity:1; transition:opacity .6s ease;
+  pointer-events:auto;
+}
+.tutorial.hide { opacity:0; pointer-events:none; }
+.tut-title {
+  font-family:'Noto Serif KR',serif;
+  font-size:clamp(16px,4vw,22px); font-weight:300;
+  letter-spacing:.16em; color:rgba(255,255,255,.8);
+  text-align:center; line-height:1.6;
+}
+.tut-items { display:flex; flex-direction:column; gap:18px; width:100%; max-width:280px; }
+.tut-item { display:flex; align-items:center; gap:14px; }
+.tut-icon {
+  width:40px; height:40px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.2);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; font-size:18px;
+}
+.tut-text { font-family:'Noto Serif KR',serif; font-size:clamp(12px,3vw,14px); color:rgba(255,255,255,.55); letter-spacing:.08em; line-height:1.6; }
+.tut-btn {
+  font-family:'Noto Serif KR',serif;
+  font-size:clamp(11px,3vw,13px); letter-spacing:.2em;
+  color:rgba(255,255,255,.5); background:transparent;
+  border:1px solid rgba(255,255,255,.2);
+  padding:10px 28px; border-radius:1px; cursor:pointer;
+  transition:all .25s; margin-top:8px;
+}
+.tut-btn:hover { color:rgba(255,255,255,.85); border-color:rgba(255,255,255,.5); }
 .loading { position:fixed; inset:0; z-index:200; background:#08060a; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; transition:opacity .8s; }
 .loading.hide { opacity:0; pointer-events:none; }
 .loading-text { font-family:'Noto Serif KR',serif; font-size:13px; letter-spacing:.22em; color:rgba(255,255,255,.25); }
@@ -68,7 +114,13 @@ canvas { position:fixed; inset:0; width:100%; height:100%; cursor:pointer; }
   <div class="htitle">염원을 모은 쪽지들</div>
   <div class="hcount" id="hcount"></div>
 </div>
-<div class="hint">쪽지를 눌러 소원을 확인하세요</div>
+<div class="hint" style="bottom:72px;">쪽지를 눌러 소원을 확인하세요</div>
+
+<!-- 하단 타이포 이미지 -->
+<div class="typo-bottom">
+  <img src="typo.png" alt="타이포"
+       onerror="this.parentElement.style.display='none'">
+</div>
 
 <div class="overlay" id="overlay" onclick="closeCard(event)">
   <div class="card" id="card">
@@ -87,9 +139,29 @@ canvas { position:fixed; inset:0; width:100%; height:100%; cursor:pointer; }
   </div>
 </div>
 
+<!-- 튜토리얼 -->
+<div class="tutorial" id="tutorial">
+  <div class="tut-title">염원을 모은 쪽지들</div>
+  <div class="tut-items">
+    <div class="tut-item">
+      <div class="tut-icon">👆</div>
+      <div class="tut-text">쪽지를 누르면<br>소원을 확인할 수 있어요</div>
+    </div>
+    <div class="tut-item">
+      <div class="tut-icon">📱</div>
+      <div class="tut-text">폰을 기울이면<br>쪽지들이 같이 움직여요</div>
+    </div>
+    <div class="tut-item">
+      <div class="tut-icon">🤲</div>
+      <div class="tut-text">세게 흔들면<br>쪽지들이 뒤섞여요</div>
+    </div>
+  </div>
+  <button class="tut-btn" onclick="closeTutorial()">시작하기</button>
+</div>
+
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSDnap6D_g_NsNCZI3xvrODqGcIdAXNrR6pN9EIdgiflBuDUpqDhcZIKvQZNLyUTcE/exec';
-const NOTE_IMG_URL = 'https://iteain060312-ops.github.io/wish-tree/note.png';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0nmHdIl3uf1rArs-BPT7db8KnYmGTqRCrGryqyRShYqnesYLq5IGYGKm2f9-0DCE/exec';
+const NOTE_IMG_URL = 'note.png';
 
 const ENC = [
   '이 충전이 당신의 염원에 닿기를',
@@ -106,6 +178,49 @@ const ctx = cv.getContext('2d');
 let W, H, notes=[], t=0, hovered=-1;
 let noteImg = null;
 let wishes  = [];
+
+// ── 자이로/가속도계 ───────────────────────────────────
+let gravity = { x: 0, y: 0 };       // 현재 중력 방향
+let lastAcc = { x: 0, y: 0, z: 0 }; // 이전 가속도
+let shakeTimer = 0;                   // 흔들림 감지
+
+function initMotion() {
+  if (!window.DeviceMotionEvent) return;
+  startMotion(); // 튜토리얼 버튼에서 권한 요청하므로 바로 시작
+}
+
+function startMotion() {
+  window.addEventListener('devicemotion', e => {
+    const acc = e.accelerationIncludingGravity;
+    if (!acc) return;
+
+    const ax = acc.x || 0;
+    const ay = acc.y || 0;
+    const az = acc.z || 0;
+
+    // 기울기 → 중력 방향 (부드럽게 보간)
+    // ax: 왼오, ay: 앞뒤, 부호 조정
+    gravity.x += (ax * 0.08 - gravity.x) * 0.15;
+    gravity.y += (-ay * 0.08 - gravity.y) * 0.15;
+
+    // 흔들림 감지 — 이전 프레임과 차이가 클 때
+    const shake = Math.abs(ax - lastAcc.x) + Math.abs(ay - lastAcc.y) + Math.abs(az - lastAcc.z);
+    if (shake > 18) {
+      shakeTimer = 40; // 흔들림 지속 프레임
+      shuffleNotes();
+    }
+
+    lastAcc = { x: ax, y: ay, z: az };
+  }, { passive: true });
+}
+
+function shuffleNotes() {
+  // 흔들면 각 쪽지에 랜덤 충격 가하기
+  notes.forEach(n => {
+    n.vx += (Math.random() - 0.5) * 6;
+    n.vy += (Math.random() - 0.5) * 6;
+  });
+}
 
 // ── 이미지 로드 ──────────────────────────────────────
 function loadImage(src) {
@@ -131,11 +246,10 @@ async function loadWishes() {
     wishes.length > 0 ? `${wishes.length}개의 염원` : '아직 소원이 없어요';
 }
 
-// ── 쪽지 배치 ────────────────────────────────────────
+// ── 쪽지 배치 (물리 속성 추가) ──────────────────────
 function buildNotes() {
   if (!wishes.length) return;
   const mg = 80;
-  // 자연스럽게 흩뿌리되 겹침 최소화
   notes = wishes.map((w, i) => {
     const nw = 80 + Math.random() * 36;
     const nh = nw * (noteImg ? noteImg.height/noteImg.width : 1.0);
@@ -144,6 +258,7 @@ function buildNotes() {
       w: nw, h: nh,
       x: mg + Math.random() * (W - mg*2),
       y: mg + Math.random() * (H - mg*2),
+      vx: 0, vy: 0,            // 속도
       rot: (Math.random() - 0.5) * 0.6,
       fp:  Math.random() * Math.PI * 2,
       fs:  0.32 + Math.random() * 0.32,
@@ -151,52 +266,126 @@ function buildNotes() {
       enc: ENC[i % ENC.length],
     };
   });
+
+  // 초기 겹침 해소
+  separateNotes();
+}
+
+// ── 물리 업데이트 ────────────────────────────────────
+function updatePhysics() {
+  if (shakeTimer > 0) shakeTimer--;
+  const FRICTION  = 0.88;   // 마찰 (빨리 멈춤)
+  const GRAV_SCALE= 0.04;   // 중력 세기 (약하게)
+  const BORDER    = 60;     // 화면 경계 여백
+
+  notes.forEach(n => {
+    // 중력 방향으로 살짝 당기기
+    n.vx += gravity.x * GRAV_SCALE;
+    n.vy += gravity.y * GRAV_SCALE;
+
+    // 마찰
+    n.vx *= FRICTION;
+    n.vy *= FRICTION;
+
+    // 위치 업데이트
+    n.x += n.vx;
+    n.y += n.vy;
+
+    // 화면 경계 처리 (튕기지 않고 살짝 밀어내기)
+    const minX = BORDER + n.w/2, maxX = W - BORDER - n.w/2;
+    const minY = BORDER + n.h/2, maxY = H - BORDER - n.h/2;
+    if (n.x < minX) { n.x = minX; n.vx *= -0.3; }
+    if (n.x > maxX) { n.x = maxX; n.vx *= -0.3; }
+    if (n.y < minY) { n.y = minY; n.vy *= -0.3; }
+    if (n.y > maxY) { n.y = maxY; n.vy *= -0.3; }
+  });
+
+  // 겹침 방지 (soft separation)
+  separateNotes(true);
+}
+
+// ── 겹침 방지 ────────────────────────────────────────
+function separateNotes(soft = false) {
+  const MIN_DIST_FACTOR = 0.72; // 이 비율 이하로 겹치면 밀어내기
+  const PUSH = soft ? 0.4 : 1.0;
+
+  for (let i=0; i<notes.length; i++) {
+    for (let j=i+1; j<notes.length; j++) {
+      const a = notes[i], b = notes[j];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+
+      // 두 쪽지의 평균 크기 기준 최소 거리
+      const minDist = ((a.w + b.w) * 0.5 + (a.h + b.h) * 0.5) * 0.5 * MIN_DIST_FACTOR;
+
+      if (dist < minDist && dist > 0.1) {
+        const overlap = (minDist - dist) / dist * PUSH;
+        const ox = dx * overlap * 0.5;
+        const oy = dy * overlap * 0.5;
+
+        if (soft) {
+          // 물리 모드 — 속도로 밀어내기
+          a.vx -= ox * 0.5; a.vy -= oy * 0.5;
+          b.vx += ox * 0.5; b.vy += oy * 0.5;
+        } else {
+          // 초기 배치 — 위치 직접 조정
+          a.x -= ox; a.y -= oy;
+          b.x += ox; b.y += oy;
+        }
+      }
+    }
+  }
 }
 
 // ── 쪽지 그리기 ──────────────────────────────────────
 function drawNote(n, hov) {
-  const fy = Math.sin(t * n.fs + n.fp) * n.fa;
-  const fx = Math.cos(t * n.fs * 0.7 + n.fp) * n.fa * 0.35;
+  // 물리 위치 기반 (float 효과는 살짝만)
+  const fy = Math.sin(t * n.fs + n.fp) * n.fa * 0.4;
+  const fx = Math.cos(t * n.fs * 0.7 + n.fp) * n.fa * 0.15;
   const sc = hov ? 1.14 : 1.0;
+
+  if (!noteImg) return;
 
   ctx.save();
   ctx.translate(n.x + fx, n.y + fy);
   ctx.rotate(n.rot);
   ctx.scale(sc, sc);
 
-  // 그림자
-  ctx.shadowColor    = 'rgba(0,0,0,0.6)';
-  ctx.shadowBlur     = hov ? 24 : 10;
-  ctx.shadowOffsetX  = hov ? 4  : 2;
-  ctx.shadowOffsetY  = hov ? 7  : 3.5;
-
-  if (noteImg) {
+  if (hov) {
+    // hover시 윤곽 따라 황금빛 glow
+    ctx.shadowColor   = 'rgba(255,240,150,0.7)';
+    ctx.shadowBlur    = 28;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.drawImage(noteImg, -n.w/2, -n.h/2, n.w, n.h);
+    ctx.shadowColor   = 'rgba(255,250,200,0.5)';
+    ctx.shadowBlur    = 12;
     ctx.drawImage(noteImg, -n.w/2, -n.h/2, n.w, n.h);
   } else {
-    // 이미지 없을 때 폴백
-    ctx.fillStyle = 'rgba(196,164,102,0.9)';
-    ctx.fillRect(-n.w/2, -n.h/2, n.w, n.h);
+    // 일반 — 이미지 윤곽 따라 드롭 섀도우
+    ctx.shadowColor   = 'rgba(0,0,0,0.55)';
+    ctx.shadowBlur    = 10;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 3.5;
+    ctx.drawImage(noteImg, -n.w/2, -n.h/2, n.w, n.h);
   }
 
+  // 본체 (shadow 없이 한 번 더 그려서 선명하게)
   ctx.shadowColor = 'transparent';
-
-  // hover 빛
-  if (hov) {
-    ctx.fillStyle = 'rgba(255,240,160,0.1)';
-    ctx.fillRect(-n.w/2, -n.h/2, n.w, n.h);
-  }
+  ctx.drawImage(noteImg, -n.w/2, -n.h/2, n.w, n.h);
 
   ctx.restore();
 }
 
 // ── 히트 테스트 ──────────────────────────────────────
 function hit(n, mx, my) {
-  const fy = Math.sin(t * n.fs + n.fp) * n.fa;
-  const fx = Math.cos(t * n.fs * 0.7 + n.fp) * n.fa * 0.35;
+  const fy = Math.sin(t * n.fs + n.fp) * n.fa * 0.4;
+  const fx = Math.cos(t * n.fs * 0.7 + n.fp) * n.fa * 0.15;
   const dx = mx - (n.x + fx), dy = my - (n.y + fy);
   const cr = Math.cos(-n.rot), sr = Math.sin(-n.rot);
   const lx = dx*cr - dy*sr, ly = dx*sr + dy*cr;
-  return Math.abs(lx) < n.w/2 + 8 && Math.abs(ly) < n.h/2 + 8;
+  return Math.abs(lx) < n.w/2 + 10 && Math.abs(ly) < n.h/2 + 10;
 }
 
 // ── 별 ───────────────────────────────────────────────
@@ -212,6 +401,7 @@ function drawStars() {
 // ── 메인 루프 ────────────────────────────────────────
 function frame() {
   t += 0.006;
+  updatePhysics(); // 물리 업데이트
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#08060a'; ctx.fillRect(0, 0, W, H);
   drawStars();
@@ -257,6 +447,17 @@ function closeCard(e) {
 }
 function forceClose() { document.getElementById('overlay').classList.remove('on'); }
 
+function closeTutorial() {
+  const tut = document.getElementById('tutorial');
+  tut.classList.add('hide');
+  setTimeout(() => tut.style.display='none', 600);
+  // iOS 자이로 권한도 여기서 요청
+  if (typeof DeviceMotionEvent !== 'undefined' &&
+      typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission().catch(()=>{});
+  }
+}
+
 // ── 리사이즈 ─────────────────────────────────────────
 function resize() {
   cv.width  = window.innerWidth  * devicePixelRatio;
@@ -294,6 +495,7 @@ async function init() {
   ]);
 
   buildNotes();
+  initMotion(); // 자이로스코프 시작
 
   const loading = document.getElementById('loading');
   loading.classList.add('hide');
