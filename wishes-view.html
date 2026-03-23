@@ -246,61 +246,105 @@ async function loadWishes() {
     wishes.length > 0 ? `${wishes.length}개의 염원` : '아직 소원이 없어요';
 }
 
-// ── 쪽지 배치 (물리 속성 추가) ──────────────────────
+// ── 쪽지 배치 ────────────────────────────────────────
+const SCROLL_THRESHOLD = 20; // 이 개수 이상이면 스크롤 모드
+
 function buildNotes() {
   if (!wishes.length) return;
-  const mg = 80;
-  notes = wishes.map((w, i) => {
-    const nw = 80 + Math.random() * 36;
-    const nh = nw * (noteImg ? noteImg.height/noteImg.width : 1.0);
-    return {
-      wish: w,
-      w: nw, h: nh,
-      x: mg + Math.random() * (W - mg*2),
-      y: mg + Math.random() * (H - mg*2),
-      vx: 0, vy: 0,            // 속도
-      rot: (Math.random() - 0.5) * 0.6,
-      fp:  Math.random() * Math.PI * 2,
-      fs:  0.32 + Math.random() * 0.32,
-      fa:  1.6  + Math.random() * 2.0,
-      enc: ENC[i % ENC.length],
-    };
-  });
 
-  // 초기 겹침 해소
-  separateNotes();
+  const isScroll = wishes.length > SCROLL_THRESHOLD;
+
+  if (isScroll) {
+    // 스크롤 모드 — 세로로 쭉 나열, canvas 높이 늘림
+    const COLS     = Math.floor(W / 120);
+    const NOTE_W   = 85 + Math.random() * 20;
+    const PAD_X    = 60, PAD_Y = 100;
+    const colW     = (W - PAD_X * 2) / COLS;
+    const totalRows= Math.ceil(wishes.length / COLS);
+    const totalH   = Math.max(H, PAD_Y * 2 + totalRows * 130);
+
+    // canvas 높이 확장
+    cv.height = totalH * devicePixelRatio;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    cv.style.height = totalH + 'px';
+    cv.style.position = 'absolute';
+    document.body.style.overflowY = 'auto';
+    document.body.style.height = totalH + 'px';
+
+    notes = wishes.map((w, i) => {
+      const nw = NOTE_W;
+      const nh = nw * (noteImg ? noteImg.height/noteImg.width : 1.0);
+      const col = i % COLS;
+      const row = Math.floor(i / COLS);
+      return {
+        wish: w,
+        w: nw, h: nh,
+        x: PAD_X + col * colW + colW/2 + (Math.random()-0.5)*18,
+        y: PAD_Y + row * 130 + (Math.random()-0.5)*14,
+        vx: 0, vy: 0,
+        rot: (Math.random()-0.5)*0.45,
+        fp: Math.random()*Math.PI*2,
+        fs: 0.28+Math.random()*0.28,
+        fa: 0.8+Math.random()*0.8,
+        enc: ENC[i % ENC.length],
+        scrollH: totalH,
+      };
+    });
+    H = totalH;
+  } else {
+    // 일반 모드 — 자유 배치
+    document.body.style.overflowY = 'hidden';
+    document.body.style.height = '100%';
+    cv.style.position = 'fixed';
+    cv.style.height = '';
+    const mg = 80;
+    notes = wishes.map((w, i) => {
+      const nw = 80 + Math.random() * 36;
+      const nh = nw * (noteImg ? noteImg.height/noteImg.width : 1.0);
+      return {
+        wish: w,
+        w: nw, h: nh,
+        x: mg + Math.random() * (W - mg*2),
+        y: mg + Math.random() * (H - mg*2),
+        vx: 0, vy: 0,
+        rot: (Math.random()-0.5)*0.6,
+        fp: Math.random()*Math.PI*2,
+        fs: 0.32+Math.random()*0.32,
+        fa: 1.6+Math.random()*2.0,
+        enc: ENC[i % ENC.length],
+      };
+    });
+    separateNotes();
+  }
 }
 
 // ── 물리 업데이트 ────────────────────────────────────
 function updatePhysics() {
   if (shakeTimer > 0) shakeTimer--;
-  const FRICTION  = 0.88;   // 마찰 (빨리 멈춤)
-  const GRAV_SCALE= 0.04;   // 중력 세기 (약하게)
-  const BORDER    = 60;     // 화면 경계 여백
+  const FRICTION   = 0.96;   // 마찰 줄임 (더 오래 미끄러짐)
+  const GRAV_SCALE = 0.06;   // 중력 세기 살짝 올림
+  const BORDER     = 60;
+
+  const isScroll = wishes.length > SCROLL_THRESHOLD;
 
   notes.forEach(n => {
-    // 중력 방향으로 살짝 당기기
     n.vx += gravity.x * GRAV_SCALE;
     n.vy += gravity.y * GRAV_SCALE;
-
-    // 마찰
     n.vx *= FRICTION;
     n.vy *= FRICTION;
+    n.x  += n.vx;
+    n.y  += n.vy;
 
-    // 위치 업데이트
-    n.x += n.vx;
-    n.y += n.vy;
-
-    // 화면 경계 처리 (튕기지 않고 살짝 밀어내기)
+    const scrollH = isScroll ? (n.scrollH || H) : H;
     const minX = BORDER + n.w/2, maxX = W - BORDER - n.w/2;
-    const minY = BORDER + n.h/2, maxY = H - BORDER - n.h/2;
+    const minY = BORDER + n.h/2, maxY = scrollH - BORDER - n.h/2;
     if (n.x < minX) { n.x = minX; n.vx *= -0.3; }
     if (n.x > maxX) { n.x = maxX; n.vx *= -0.3; }
     if (n.y < minY) { n.y = minY; n.vy *= -0.3; }
     if (n.y > maxY) { n.y = maxY; n.vy *= -0.3; }
   });
 
-  // 겹침 방지 (soft separation)
   separateNotes(true);
 }
 
@@ -401,9 +445,10 @@ function drawStars() {
 // ── 메인 루프 ────────────────────────────────────────
 function frame() {
   t += 0.006;
-  updatePhysics(); // 물리 업데이트
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#08060a'; ctx.fillRect(0, 0, W, H);
+  updatePhysics();
+  const drawH = wishes.length > SCROLL_THRESHOLD ? (notes[0]?.scrollH || H) : H;
+  ctx.clearRect(0, 0, W, drawH);
+  ctx.fillStyle = '#08060a'; ctx.fillRect(0, 0, W, drawH);
   drawStars();
   notes.forEach((n,i) => { if (i !== hovered) drawNote(n, false); });
   if (hovered >= 0) drawNote(notes[hovered], true);
