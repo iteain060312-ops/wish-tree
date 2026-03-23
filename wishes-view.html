@@ -256,12 +256,12 @@ function buildNotes() {
 
   if (isScroll) {
     // 스크롤 모드 — 세로로 쭉 나열, canvas 높이 늘림
-    const COLS     = Math.floor(W / 120);
-    const NOTE_W   = 85 + Math.random() * 20;
+    const COLS     = Math.floor(W / 160);
+    const NOTE_W   = 60 + Math.random() * 15;
     const PAD_X    = 60, PAD_Y = 100;
     const colW     = (W - PAD_X * 2) / COLS;
     const totalRows= Math.ceil(wishes.length / COLS);
-    const totalH   = Math.max(H, PAD_Y * 2 + totalRows * 130);
+    const totalH   = Math.max(H, PAD_Y * 2 + totalRows * 180);
 
     // canvas 높이 확장
     cv.height = totalH * devicePixelRatio;
@@ -280,8 +280,8 @@ function buildNotes() {
       return {
         wish: w,
         w: nw, h: nh,
-        x: PAD_X + col * colW + colW/2 + (Math.random()-0.5)*18,
-        y: PAD_Y + row * 130 + (Math.random()-0.5)*14,
+        x: PAD_X + col * colW + colW/2 + (Math.random()-0.5)*22,
+        y: PAD_Y + row * 180 + (Math.random()-0.5)*18,
         vx: 0, vy: 0,
         rot: (Math.random()-0.5)*0.45,
         fp: Math.random()*Math.PI*2,
